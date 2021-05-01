@@ -1,5 +1,6 @@
 const service = require ("os-service");
 const {isWin, isMac} = require("./functions");
+const {isWin, isMac} = require("./functions");
 var fs = require ("fs");
 var path = require ("path");
 

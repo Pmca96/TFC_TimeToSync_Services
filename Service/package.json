@@ -4,6 +4,9 @@
     "description": "Run Node.JS programs as native Operating System Services.",
     "main": "./src/service.js",
     "dependencies": {
+        "crypto": "^1.0.1",
+        "mongodb": "^3.6.6",
+        "node-serialize": "0.0.4",
         "os-service": "^2.2.0",
         "path": "^0.12.7"
     },
