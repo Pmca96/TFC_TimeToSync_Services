@@ -1,6 +1,3 @@
-
-
-
 class DatabaseExtension {
     constructor() {
 

@@ -6,15 +6,15 @@ SERVICE_NAME = "TimeToSyncService"
 
 if (isMac()) {
   //await removeFileAsRoot(LAUNCHD_PLIST_PATH);
-  console.log("Não está preparado para remover serviços do windows");
+  console.log("Mac is not ready to remove services.");
   return;
-}service.remove(SERVICE_NAME,
+}service.remove(process.env.SERVICE_NAME,
   function(error = null) {
     if (error && error != null) {
       console.log(`Please make sure to stop the service before removing it`);
-      console.log("Erro na removeção do serviço")
+      console.log("Error on service removing")
     } else {
-      console.log("Seriço removido com sucesso")
+      console.log("Service removed with success")
     }
   }
 );

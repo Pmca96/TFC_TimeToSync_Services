@@ -26,12 +26,12 @@ const decrypt = (hash) => {
 };
 
 const readConfig = () => {
-    return decrypt(fs.readFileSync(path.resolve(__dirname+"/../assets/config.cnf"), 'utf8' ))
+    return decrypt(fs.readFileSync(path.resolve(__dirname+"/../../assets/config.cnf"), 'utf8' ))
 }
 
 const writeConfig = (text) => {
     text = encrypt(text)
-    let data = fs.writeFileSync(__dirname+"/../assets/config.cnf", text.content);
+    let data = fs.writeFileSync(__dirname+"/../../assets/config.cnf", text.content);
     
     return data;
 }

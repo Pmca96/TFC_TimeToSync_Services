@@ -33,4 +33,8 @@ setInterval (function () {
     console.log("write");
 }, 1000);
 
+setInterval (function () {
+    console.log("write");
+}, 1000);
+
 

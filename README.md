@@ -8,3 +8,7 @@ npx pkg . --out-path .\package\ --targets node10-win32-x64
 
 
 https://nodejs.org/en/knowledge/command-line/how-to-prompt-for-command-line-input/
+
+
+MONGODB FIND
+https://morioh.com/p/17b7f3cdc512

@@ -1,14 +1,14 @@
 
-const {isWin, isMac} = require("./functions");
+const {isWin, isMac} = require("./classes/functions");
 const path = require ("path");
-const crypt = require("./crypto")
-const mongo = require("./mongodb")
+const crypt = require("./classes/crypto")
+const Mongo = require("./classes/mongodb")
 
 crypt.writeConfig("mongodb+srv://admin:admin@cluster0.2vlbl.mongodb.net/TimeToSync");
 var uri = crypt.readConfig()
 
 
-let mongoClient = new mongo.Mongo(uri)
+let mongoClient = new Mongo(uri)
 const start = async function() {
     await mongoClient.init()
  

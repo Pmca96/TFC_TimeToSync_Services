@@ -5,7 +5,11 @@
     "main": "./src/service.js",
     "dependencies": {
         "crypto": "^1.0.1",
+        "dotenv": "^10.0.0",
+        "microjob": "^0.7.0",
         "mongodb": "^3.6.6",
+        "mysql": "^2.18.1",
+        "node-machine-id": "^1.1.12",
         "node-serialize": "0.0.4",
         "os-service": "^2.2.0",
         "path": "^0.12.7"

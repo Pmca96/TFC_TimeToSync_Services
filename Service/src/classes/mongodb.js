@@ -9,12 +9,14 @@ class Mongo extends DE.DatabaseExtension {
     }
     
     async init() {
-        this.client = new MongoClient(this.uri, { useUnifiedTopology: true});
+        this.client = new MongoClient(this.uri, { useUnifiedTopology: true, poolSize: 10});
         
         await this.client.connect()
         this.database = await this.client.db(this.db);
         return 
     }
+
+   
 
     async insert ( collection, doc, isMany = 0) {
         let collectionSetted = this.database.collection(collection);
@@ -25,23 +27,24 @@ class Mongo extends DE.DatabaseExtension {
             result = await collectionSetted.insertOne(doc);
         return result
     }
-
+    
     async find ( collection, query = null, sort = null, limit = 0) {
         let collectionSetted = this.database.collection(collection);
         let result
         
         result = await collectionSetted.find(query).sort(sort).limit(limit);
-        return result
+        let data = result.toArray();
+        return data;
     }
 
-    async update ( collection, setChanges, where = {}, isMany = false ) {
+    async update( collection, setChanges, query = {}, isMany = false ) {
         let collectionSetted = this.database.collection(collection);
         let result
 
         if (isMany)
-            result = await collectionSetted.updateMany(where, {$set: setChanges} )
+            result = await collectionSetted.updateMany(query, {$set: setChanges} )
         else
-            result = await collectionSetted.updateOne(where, {$set: setChanges} )
+            result = await collectionSetted.updateOne(query, {$set: setChanges} )
         return result
     }
 
@@ -61,6 +64,7 @@ class Mongo extends DE.DatabaseExtension {
         return 
     }
 }
-exports.Mongo = Mongo;
+
+module.exports = Mongo;
 
 
