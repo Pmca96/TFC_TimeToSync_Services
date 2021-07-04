@@ -15,7 +15,6 @@ if (process.argv.length == 3 && process.argv[2].contains["-h"] && process.argv[2
     process.exit();
 }
 
-
 service.add(
     "TimeToSyncService",
     {
