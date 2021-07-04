@@ -1,9 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
-const DE = require('./databaseExtension');
 
-class Mongo extends DE.DatabaseExtension {
+class Mongo {
     constructor(uri) {
-      super()
       this.uri = uri;
       this.db = "TimeToSync"
     }

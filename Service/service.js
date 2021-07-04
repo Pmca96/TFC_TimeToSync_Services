@@ -2,12 +2,12 @@ const service = require("os-service")
 const crypt = require("./src/classes/crypto")
 const Mongo = require("./src/classes/mongodb")
 const Connection_CheckNew = require("./src/chunks/Connection_CheckNew")
+const Connection_Refresh = require("./src/chunks/Connection_Refresh")
 const pingHealthy = require("./src/chunks/pingHealthy")
 const { machineIdSync } = require("node-machine-id");
 const os = require("os");
 const { start } = require("microjob");
 const path = require ("path");
-const fs = require ("fs");
 
 
 if (process.argv.length == 3 && process.argv[2].contains["-h"] && process.argv[2].length <= 7) {
@@ -19,7 +19,7 @@ service.add(
     "TimeToSyncService",
     {
         displayName: "TimeToSyncService",
-        programPath: path.resolve("./assets/config.cnf"),
+        programPath: path.resolve("./service.exe"),
         programArgs: "",
         username: "", // the username to run the service as
         password: ""
@@ -85,18 +85,19 @@ const startTimers = () => {
     // Check task
     // Ping for healty check up
     // every 15 seconds 
-    Connection_CheckNew(objectToDistribut);
     pingHealthy(objectToDistribut);
+    Connection_Refresh(objectToDistribut);
+    Connection_CheckNew(objectToDistribut);
     
     setInterval(async function () {
-        Connection_CheckNew(objectToDistribut);
         pingHealthy(objectToDistribut);
+        Connection_CheckNew(objectToDistribut);
     }, 15000);
 
     // Redefines tables
     // every 30 minutes
     setInterval(async function () {
-
+        Connection_Refresh(objectToDistribut);
     }, 1800000);
 }
 

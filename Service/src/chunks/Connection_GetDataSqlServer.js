@@ -37,7 +37,12 @@ const Connection_GetDataSqlServer = async (dataConnection, dataMongo) => {
                 ))
                 objectToInsert.tables.push({ name: j.tableName, columns: columnsToObj })
             }));
-            await clientMongo.insert("Databases", objectToInsert)
+
+            let dataFound = await clientMongo.find("Databases", {idConnection:  objectToInsert.idConnection  , database:  objectToInsert.database})
+            if (dataFound.length > 0) 
+                await clientMongo.update("Databases", objectToInsert, {idConnection:  objectToInsert.idConnection  , database:  objectToInsert.database})
+            else
+                await clientMongo.insert("Databases", objectToInsert)
         }))
 
         // Set connection status to complete

@@ -4,7 +4,7 @@ var objectDataGlobal
 
 const Connection_CheckNew = async (objectData) => {
     objectDataGlobal = objectData;
-    data = await objectDataGlobal.mongoClient.find("Connections", { $and: [
+    let data = await objectDataGlobal.mongoClient.find("Connections", { $and: [
         { $or: [ 
             {status: { $exists: false } },
             {status: 0 },
@@ -18,7 +18,6 @@ const Connection_CheckNew = async (objectData) => {
             { computers: objectDataGlobal.dataToWorkers.machineIdDB }, 
             {_id : { $in:  conditionID }}
         ] }, true)
-        console.log(conditionID)
         getNewData(data, conditionID)
     }
 }
@@ -31,9 +30,9 @@ const getNewData = async (dataOutter,conditionID) => {
         // this function will be executed in another thread
         // the requires will only belong to the new thread
         await job(async data => {
-            const Connection_GetDataMySQL = require("./chunks/Connection_GetDataMySQL")
-            const Connection_GetDataSqlServer = require("./chunks/Connection_GetDataSqlServer")
-            const Mongo = require("./classes/mongodb")
+            const Connection_GetDataMySQL = require("./src/chunks/Connection_GetDataMySQL")
+            const Connection_GetDataSqlServer = require("./src/chunks/Connection_GetDataSqlServer")
+            const Mongo = require("./src/classes/mongodb")
             let error = false;
             let response;
             await Promise.all(data.data.map(async (i) => {

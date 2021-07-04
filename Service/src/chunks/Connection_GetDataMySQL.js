@@ -16,11 +16,12 @@ const Connection_GetDataMySQL = async (dataConnection, dataMongo) => {
 
         await clientMysql.init();
         await clientMysql.close();
-
+        
 
         clientMysql.initPool();
 
-        let resultDatabases = await clientMysql.queryPool("SELECT `schema_name` as `Database` from INFORMATION_SCHEMA.SCHEMATA  WHERE schema_name NOT IN('information_schema', 'mysql', 'performance_schema');");
+        let resultDatabases = await clientMysql.queryPool("SELECT `schema_name` as `Database` from INFORMATION_SCHEMA.SCHEMATA " +
+         " WHERE schema_name NOT IN('information_schema', 'mysql', 'performance_schema', 'sys');");
 
         await Promise.all( resultDatabases.map(async (i) => {
             let objectToInsert = {};
@@ -30,15 +31,18 @@ const Connection_GetDataMySQL = async (dataConnection, dataMongo) => {
             objectToInsert.tables = [];
             let resultTables = await clientMysql.queryPool("SELECT table_name as tableName FROM information_schema.tables WHERE table_schema = '" + i.Database + "';");
             await Promise.all(resultTables.map(async (j) => {
-                let resultQueryCreateTable = await clientMysql.queryPool("show create table " + i.Database + "." + j.tableName);
                 let resultColumns = await clientMysql.queryPool(await getColumns(i.Database, j.tableName));
                 let columnsToObj = []
                 await Promise.all(resultColumns.map((m) =>
                     columnsToObj.push(m)
                 ))
-                objectToInsert.tables.push({ name: j.tableName, queryCreate: resultQueryCreateTable[0]["Create Table"], columns: columnsToObj })
+                objectToInsert.tables.push({ name: j.tableName, columns: columnsToObj })
             }));
-            await clientMongo.insert("Databases", objectToInsert)
+            let dataFound = await clientMongo.find("Databases", {idConnection:  objectToInsert.idConnection  , database:  objectToInsert.database})
+            if (dataFound.length > 0) 
+                await clientMongo.update("Databases", objectToInsert, {idConnection:  objectToInsert.idConnection  , database:  objectToInsert.database})
+            else
+                await clientMongo.insert("Databases", objectToInsert)
         }))
 
         // Set connection status to complete

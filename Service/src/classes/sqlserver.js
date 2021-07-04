@@ -1,9 +1,7 @@
 const sql= require("mssql");
-const DE = require('./databaseExtension');
 
-class SqlServer extends DE.DatabaseExtension {
+class SqlServer {
   constructor(host, port, user, pass) {
-    super();
     this.host = host;
     this.port = port;
     this.user = user;
@@ -31,8 +29,6 @@ class SqlServer extends DE.DatabaseExtension {
       return { state: "disconnected" };
     }
   }
-
-
 
   async query(queryString, database = "", type = "SELECT") {
     if (database != "")

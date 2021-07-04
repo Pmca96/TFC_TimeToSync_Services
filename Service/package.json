@@ -18,8 +18,8 @@
         "myapp": "./service.js"
     },
     "pkg": {
-        "assets": [
-            "assets/config.cnf"
+        "scripts": [
+            "node_modules/*"
         ]
     },
     "scripts": {

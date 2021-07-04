@@ -1,9 +1,7 @@
 const mysql = require("mysql");
-const DE = require('./databaseExtension');
 
-class MySQL extends DE.DatabaseExtension {
+class MySQL {
   constructor(host, port, user, pass) {
-    super();
     this.host = host;
     this.port = port;
     this.user = user;
@@ -29,6 +27,7 @@ class MySQL extends DE.DatabaseExtension {
         });
       });
     } catch (e) {
+      console.log(e);
       return e;
     }
   }
