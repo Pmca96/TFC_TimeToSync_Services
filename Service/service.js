@@ -1,20 +1,26 @@
-require('dotenv').config({ path: "../../.env" })
-
 const service = require("os-service")
-const crypt = require("./classes/crypto")
-const Mongo = require("./classes/mongodb")
-const Connection_CheckNew = require("./chunks/Connection_CheckNew")
-const pingHealthy = require("./chunks/pingHealthy")
+const crypt = require("./src/classes/crypto")
+const Mongo = require("./src/classes/mongodb")
+const Connection_CheckNew = require("./src/chunks/Connection_CheckNew")
+const pingHealthy = require("./src/chunks/pingHealthy")
 const { machineIdSync } = require("node-machine-id");
 const os = require("os");
 const { start } = require("microjob");
+const path = require ("path");
+const fs = require ("fs");
+
+
+if (process.argv.length == 3 && process.argv[2].contains["-h"] && process.argv[2].length <= 7) {
+    console.log(".exe 'mongodbUri'");
+    process.exit();
+}
 
 
 service.add(
-    process.env.SERVICE_NAME,
+    "TimeToSyncService",
     {
-        displayName: process.env.SERVICE_NAME,
-        programPath: process.env.PROGRAM_PATH,
+        displayName: "TimeToSyncService",
+        programPath: path.resolve("./assets/config.cnf"),
         programArgs: "",
         username: "", // the username to run the service as
         password: ""

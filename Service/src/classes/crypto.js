@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const serialize = require('node-serialize');
-const fs = require ("fs");
-const path = require ("path");
+const fs = require("fs");
+const path = require("path");
 
 const algorithm = 'aes-256-ctr';
 const secretKey = 'vOVH6sdmpNWjRRIqCc7rdxs01lwHzfr3';
@@ -19,21 +19,33 @@ const encrypt = (text) => {
 
 const decrypt = (hash) => {
     const decipher = crypto.createDecipheriv(algorithm, secretKey, Buffer.from(iv.toString('hex'), 'hex'));
-    
+
     const decrpyted = Buffer.concat([decipher.update(Buffer.from(hash, 'hex')), decipher.final()]);
-    
+
     return decrpyted.toString();
 };
 
 const readConfig = () => {
-    return decrypt(fs.readFileSync(path.resolve(__dirname+"/../../assets/config.cnf"), 'utf8' ))
+    try {
+        return decrypt(fs.readFileSync(path.resolve("./assets/config.cnf"), 'utf8'))
+    }
+    catch (error) {
+        console.log(".Couldn't read file config");
+        process.exit();
+    }
 }
 
 const writeConfig = (text) => {
-    text = encrypt(text)
-    let data = fs.writeFileSync(__dirname+"/../../assets/config.cnf", text.content);
-    
-    return data;
+    try {
+        text = encrypt(text)
+        let data = fs.writeFileSync(path.resolve("./assets/config.cnf"), text.content);
+
+        return data;
+    }
+    catch (error) {
+        console.log(".Couldn't write in file config");
+        process.exit();
+    }
 }
 
 module.exports = {
@@ -42,13 +54,3 @@ module.exports = {
     readConfig,
     writeConfig
 };
-
-
-// const MongoClient = require('mongodb').MongoClient;
-// const uri = "mongodb+srv://admin:admin@cluster0.2vlbl.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
-// const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-// client.connect(err => {
-//   const collection = client.db("test").collection("devices");
-//   // perform actions on the collection object
-//   client.close();
-// });

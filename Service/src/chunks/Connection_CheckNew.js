@@ -14,10 +14,11 @@ const Connection_CheckNew = async (objectData) => {
     if (data.length > 0) {
         let conditionID = []
         data.map(i => conditionID.push(i._id))
-        let x = await objectDataGlobal.mongoClient.update("Connections", { status: 1 }, { $and: [
-            { computers: objectDataGlobal.dataToWorkers.machineIdDB }, 
-            {_id : { $in:  conditionID }}
-        ] }, true)
+        // let x = await objectDataGlobal.mongoClient.update("Connections", { status: 1 }, { $and: [
+        //     { computers: objectDataGlobal.dataToWorkers.machineIdDB }, 
+        //     {_id : { $in:  conditionID }}
+        // ] }, true)
+        console.log(conditionID)
         getNewData(data, conditionID)
     }
 }

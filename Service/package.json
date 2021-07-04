@@ -2,7 +2,7 @@
     "version": "1.0.0",
     "name": "service",
     "description": "Run Node.JS programs as native Operating System Services.",
-    "main": "./src/service.js",
+    "main": "./service.js",
     "dependencies": {
         "crypto": "^1.0.1",
         "dotenv": "^10.0.0",
@@ -15,7 +15,12 @@
         "path": "^0.12.7"
     },
     "bin": {
-        "myapp": "./src/service.js"
+        "myapp": "./service.js"
+    },
+    "pkg": {
+        "assets": [
+            "assets/config.cnf"
+        ]
     },
     "scripts": {
         "b_mac": "npx pkg . --out-path .\\package\\ --targets node12-macos-x64",
