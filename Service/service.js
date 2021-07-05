@@ -6,7 +6,6 @@ const Connection_Refresh = require("./src/chunks/Connection_Refresh")
 const pingHealthy = require("./src/chunks/pingHealthy")
 const { machineIdSync } = require("node-machine-id");
 const os = require("os");
-const { start } = require("microjob");
 const path = require ("path");
 
 
@@ -72,32 +71,28 @@ const initialize = async function () {
         });
         objectToDistribut.dataToWorkers.machineIdDB = dataInsert.insertedId;
     }
-
-    // start worker pool
-    await start({ maxWorkers: objectToDistribut.maxWorkers });
     startTimers();
-    
 }
 
 
-const startTimers = () => {
+const startTimers = async () => {
     // Check new database connections to get structure
     // Check task
     // Ping for healty check up
     // every 15 seconds 
-    pingHealthy(objectToDistribut);
-    Connection_Refresh(objectToDistribut);
-    Connection_CheckNew(objectToDistribut);
     
+    await pingHealthy(objectToDistribut);
+    await Connection_Refresh(objectToDistribut);
+    await Connection_CheckNew(objectToDistribut);
     setInterval(async function () {
-        pingHealthy(objectToDistribut);
-        Connection_CheckNew(objectToDistribut);
+       await pingHealthy(objectToDistribut);
+       await Connection_CheckNew(objectToDistribut);
     }, 15000);
 
     // Redefines tables
     // every 30 minutes
     setInterval(async function () {
-        Connection_Refresh(objectToDistribut);
+       await Connection_Refresh(objectToDistribut);
     }, 1800000);
 }
 

@@ -2,6 +2,7 @@ const Mongo = require("../classes/mongodb")
 const { ObjectID } = require("mongodb");
 const SqlServer = require("../classes/sqlserver")
 const crypt = require("../classes/crypto")
+const { workerData} = require('worker_threads');
 
 
 const Connection_GetDataSqlServer = async (dataConnection, dataMongo) => {
@@ -53,13 +54,11 @@ const Connection_GetDataSqlServer = async (dataConnection, dataMongo) => {
          ] }, true)
         await clientSql.closePools();
         await clientMongo.close();
+        process.exit("1");
     } catch (e) {
-        throw new Error('exception!');
+        throw new Error(e);
     }
-    return "SqlServer";
 }
-
-
 
 async function getColumns(database, table) {
     return "SELECT " +
@@ -86,6 +85,7 @@ async function getColumns(database, table) {
         "c.object_id = OBJECT_ID('" + database + "." + table + "') order by c.column_id ";
 }
 
+Connection_GetDataSqlServer(workerData[0],workerData[1]);
 
 // -- Get creation procedures and functions and triggers
 // select object_definition(object_id)

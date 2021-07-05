@@ -1,4 +1,4 @@
-const { Worker, isMainThread, parentPort } = require('worker_threads');
+const { Worker } = require('worker_threads');
 const workerList = [] 
 let exitedWorkers = 0;
 for (i = 1 ; i<5 ; i++) {

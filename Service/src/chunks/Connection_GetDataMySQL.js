@@ -2,9 +2,10 @@ const Mongo = require("../classes/mongodb")
 const { ObjectID } = require("mongodb");
 const MySQL = require("../classes/mysql")
 const crypt = require("../classes/crypto")
-
+const { workerData} = require('worker_threads');
 
 const Connection_GetDataMySQL = async (dataConnection, dataMongo) => {
+    
     try {
         dataConnection.pass = await crypt.decrypt(dataConnection.pass)
         let clientMysql = null
@@ -37,12 +38,14 @@ const Connection_GetDataMySQL = async (dataConnection, dataMongo) => {
                     columnsToObj.push(m)
                 ))
                 objectToInsert.tables.push({ name: j.tableName, columns: columnsToObj })
+                
             }));
             let dataFound = await clientMongo.find("Databases", {idConnection:  objectToInsert.idConnection  , database:  objectToInsert.database})
             if (dataFound.length > 0) 
                 await clientMongo.update("Databases", objectToInsert, {idConnection:  objectToInsert.idConnection  , database:  objectToInsert.database})
             else
                 await clientMongo.insert("Databases", objectToInsert)
+                
         }))
 
         // Set connection status to complete
@@ -53,14 +56,11 @@ const Connection_GetDataMySQL = async (dataConnection, dataMongo) => {
          ] }, true)
 
         await clientMongo.close();
-        return 1;
+        process.exit("1");
     } catch (e) {
-        console.log(e)
-        throw new Error('exception!');
+        throw new Error(e);
     }
-
 }
-
 
 async function getColumns(database, table) {
     return "SELECT " +
@@ -81,7 +81,7 @@ async function getColumns(database, table) {
         "ORDER BY t.table_schema,t.table_type,t.table_name,c.ordinal_position;"
 }
 
-
+Connection_GetDataMySQL(workerData[0],workerData[1]);
 
 //https://www.artfulsoftware.com/infotree/queries.php
 
@@ -114,5 +114,3 @@ async function getColumns(database, table) {
 
 // -- For create table
 //show create table employees;
-
-module.exports = Connection_GetDataMySQL;
