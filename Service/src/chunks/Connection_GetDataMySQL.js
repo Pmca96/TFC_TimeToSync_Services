@@ -64,7 +64,6 @@ const Connection_GetDataMySQL = async (dataConnection, dataMongo) => {
 
 async function getColumns(database, table) {
     return "SELECT " +
-       // "  t.table_schema AS 'Database', " +
         "  t.table_name AS 'tableName' " +
         "  ,c.column_name AS 'columnName' " +
         "  ,c.column_type AS 'columnType' " +

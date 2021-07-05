@@ -76,7 +76,7 @@ async function getColumns(database, table) {
         ", CF.name ParentColumnName " +
         "FROM sys.tables T " +
         "INNER JOIN sys.columns C ON T.object_id = C.object_id " +
-        "INNER JOIN sys.types S ON C.system_type_id = S.system_type_id " +
+        "INNER JOIN sys.types S ON C.system_type_id = S.system_type_id AND s.name NOT LIKE 'sysname' " +
         "LEFT JOIN sys.foreign_key_columns FSK ON FSK.parent_object_id = t.object_id  AND FSK.parent_column_id = C.column_id " +
         "LEFT JOIN SYS.columns CF ON FSK.referenced_object_id = CF.object_id AND FSK.referenced_column_id = CF.column_id " +
         "LEFT JOIN SYS.tables TF ON cf.object_id = TF.object_id " +
