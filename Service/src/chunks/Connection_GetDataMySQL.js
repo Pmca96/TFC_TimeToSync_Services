@@ -1,7 +1,7 @@
-const Mongo = require("../classes/mongodb")
+const Mongo = require(__dirname+"/../classes/mongodb")
 const { ObjectID } = require("mongodb");
-const MySQL = require("../classes/mysql")
-const crypt = require("../classes/crypto")
+const MySQL = require(__dirname+"/../classes/mysql")
+const crypt = require(__dirname+"/../classes/crypto")
 const { workerData} = require('worker_threads');
 
 const Connection_GetDataMySQL = async (dataConnection, dataMongo) => {
@@ -17,7 +17,6 @@ const Connection_GetDataMySQL = async (dataConnection, dataMongo) => {
 
         await clientMysql.init();
         await clientMysql.close();
-        
 
         clientMysql.initPool();
 
@@ -58,7 +57,8 @@ const Connection_GetDataMySQL = async (dataConnection, dataMongo) => {
         await clientMongo.close();
         process.exit("1");
     } catch (e) {
-        throw new Error(e);
+        console.log(e);
+        process.exit("0");
     }
 }
 

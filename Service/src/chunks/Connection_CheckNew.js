@@ -1,4 +1,5 @@
 const { Worker } = require('worker_threads');
+const Mongo = require("../classes/mongodb")
 const workerList = []
 let exitedWorkers = 0;
 let objectDataGlobal
@@ -15,11 +16,11 @@ const Connection_CheckNew = async (objectData) => {
             },
             { computers: objectDataGlobal.dataToWorkers.machineIdDB }
         ]
-    }) // set to false
+    }) 
     if (data.length > 0) {
         let conditionID = []
         data.map(i => conditionID.push(i._id))
-        await objectDataGlobal.mongoClient.update("Connections", { status: 1 }, {
+        await objectDataGlobal.mongoClient.update("Connections", { status: 1 , dateStatus : new Date()}, {
             $and: [
                 { computers: objectDataGlobal.dataToWorkers.machineIdDB },
                 { _id: { $in: conditionID } }
@@ -36,19 +37,16 @@ const getNewData = async (data, conditionID) => {
     try {
         // this function will be executed in another thread
         // the requires will only belong to the new thread
-        // const Connection_GetDataMySQL = require("./src/chunks/Connection_GetDataMySQL")
-        // const Connection_GetDataSqlServer = require("./src/chunks/Connection_GetDataSqlServer")
-        const Mongo = require("../classes/mongodb")
         let error = false;
         data.map(async (i) => {
             try {
                 let worker
                 if (i.typeDB == "SQL Server")
-                    worker = new Worker("./src/chunks/Connection_GetDataSqlServer.js", {
+                    worker = new Worker(__dirname+"/Connection_GetDataSqlServer.js", {
                         workerData: [i, objectDataGlobal.dataToWorkers]
                     });
                 else if (i.typeDB == "MySQL")
-                    worker = new Worker("./src/chunks/Connection_GetDataMySQL.js", {
+                    worker = new Worker(__dirname+"/Connection_GetDataMySQL.js", {
                         workerData: [i, objectDataGlobal.dataToWorkers]
                     });
                 else

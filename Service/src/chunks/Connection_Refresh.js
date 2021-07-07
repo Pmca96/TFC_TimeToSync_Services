@@ -1,6 +1,9 @@
-const { job } = require("microjob");
+const { Worker } = require('worker_threads');
+const Mongo = require("../classes/mongodb")
+const workerList = []
+let exitedWorkers = 0;
+let objectDataGlobal
 
-var objectDataGlobal
 
 const Connection_Refresh = async (objectData) => {
     objectDataGlobal = objectData;
@@ -10,7 +13,7 @@ const Connection_Refresh = async (objectData) => {
         let conditionID = []
         
         data.map(i => conditionID.push(i._id))
-        await objectDataGlobal.mongoClient.update("Connections", { status: 1 }, { $and: [
+        await objectDataGlobal.mongoClient.update("Connections", { status: 1 , dateStatus : new Date()}, { $and: [
             { computers: objectDataGlobal.dataToWorkers.machineIdDB }, 
             {_id : { $in:  conditionID }}
         ] }, true)
@@ -18,53 +21,61 @@ const Connection_Refresh = async (objectData) => {
     }
 }
 
-
-
-
-const getNewData = async (dataOutter,conditionID) => {
+const getNewData = async (data, conditionID) => {
     try {
         // this function will be executed in another thread
         // the requires will only belong to the new thread
-        await job(async data => {
-            const Connection_GetDataMySQL = require("./src/chunks/Connection_GetDataMySQL")
-            const Connection_GetDataSqlServer = require("./src/chunks/Connection_GetDataSqlServer")
-            const Mongo = require("./src/classes/mongodb")
-            let error = false;
-            let response;
-            
-            await Promise.all(data.data.map(async (i) => {
-                try {
-                    if (i.typeDB == "SQL Server")
-                        response = await Connection_GetDataSqlServer(i, data.ToWorkers)
-                    else if (i.typeDB == "MySQL")
-                        response = await Connection_GetDataMySQL(i, data.ToWorkers)
-                    else
-                        throw new Error('exception!');
-                }
-                catch (e) {
-                    error = true;
-                }
-            }))
+        let error = false;
+        data.map(async (i) => {
+            try {
+                let worker
+                if (i.typeDB == "SQL Server")
+                    worker = new Worker(__dirname+"/Connection_GetDataSqlServer.js", {
+                        workerData: [i, objectDataGlobal.dataToWorkers]
+                    });
+                else if (i.typeDB == "MySQL")
+                    worker = new Worker(__dirname+"/Connection_GetDataMySQL.js", {
+                        workerData: [i, objectDataGlobal.dataToWorkers]
+                    });
+                else
+                    throw new Error('exception!');
 
-            let clientMongo = new Mongo(data.ToWorkers.mongoDBuri);
+                workerList.push(worker);
+                worker.on('exit', (code) => {
+                    if (code == 0)
+                        error=true;
+                    exitedWorkers++;
+                })
+            }
+            catch (e) {
+                throw new Error(e);
+            }
+        })
+
+        // aguarda o feicho das threads
+        await new Promise((resolve) => interv = setInterval(() => {
+            if (exitedWorkers == workerList.length) {
+                clearInterval(interv);
+                resolve()
+            }
+        }, 100));
+
+        if (error == true) {
+            let clientMongo = new Mongo(objectDataGlobal.dataToWorkers.mongoDBuri);
             await clientMongo.init();
             // Set connection status to complete Invalid the ones in pending status
-            await clientMongo.update("Connections", { status: -1,  dateStatus: new Date()}, { $and: [
-                { computers: data.ToWorkers.machineIdDB },
-                { status: 1 },
-                {_id : { $in:  data.conditionID }}
-            ] }, true)
-            
-
-
-        }, { data: { data: dataOutter, ToWorkers: objectDataGlobal.dataToWorkers, conditionID:conditionID } }
-        );
+            await clientMongo.update("Connections", { status: -1, dateStatus: new Date() }, {
+                $and: [
+                    { computers: objectDataGlobal.dataToWorkers.machineIdDB },
+                    { status: 1 },
+                    { _id: { $in: conditionID } }
+                ]
+            }, true)
+        }
 
     } catch (err) {
         console.error(err);
     }
-
-
 }
 
 

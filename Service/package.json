@@ -4,10 +4,11 @@
     "description": "Run Node.JS programs as native Operating System Services.",
     "main": "./service.js",
     "dependencies": {
+        "cron-parser": "^3.5.0",
         "crypto": "^1.0.1",
         "dotenv": "^10.0.0",
-        "microjob": "^0.7.0",
         "mongodb": "^3.6.6",
+        "mssql": "^7.1.3",
         "mysql": "^2.18.1",
         "node-machine-id": "^1.1.12",
         "node-serialize": "0.0.4",
@@ -20,6 +21,10 @@
     "pkg": {
         "scripts": [
             "node_modules/*"
+        ],
+        "assets": [
+            "./src/chunks/*",
+            "./src/classes/*"
         ]
     },
     "scripts": {

@@ -3,6 +3,7 @@ const crypt = require("./src/classes/crypto")
 const Mongo = require("./src/classes/mongodb")
 const Connection_CheckNew = require("./src/chunks/Connection_CheckNew")
 const Connection_Refresh = require("./src/chunks/Connection_Refresh")
+const Connection_CheckCronJobs = require("./src/chunks/Connection_CheckCronJobs")
 const pingHealthy = require("./src/chunks/pingHealthy")
 const { machineIdSync } = require("node-machine-id");
 const os = require("os");
@@ -81,19 +82,21 @@ const startTimers = async () => {
     // Ping for healty check up
     // every 15 seconds 
     
-    await pingHealthy(objectToDistribut);
-    await Connection_Refresh(objectToDistribut);
-    await Connection_CheckNew(objectToDistribut);
+    // await pingHealthy(objectToDistribut);
+    // await Connection_Refresh(objectToDistribut);
+    // await Connection_CheckNew(objectToDistribut);
+    await Connection_CheckTasks(objectToDistribut);
     setInterval(async function () {
-       await pingHealthy(objectToDistribut);
-       await Connection_CheckNew(objectToDistribut);
+    //    await pingHealthy(objectToDistribut);
+    //    await Connection_CheckNew(objectToDistribut);
+           await Connection_CheckTasks(objectToDistribut);
     }, 15000);
 
     // Redefines tables
     // every 30 minutes
     setInterval(async function () {
        await Connection_Refresh(objectToDistribut);
-    }, 1800000);
+    }, 1830000);
 }
 
 
