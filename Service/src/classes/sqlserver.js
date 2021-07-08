@@ -30,15 +30,20 @@ class SqlServer {
     }
   }
 
-  async query(queryString, database = "", type = "SELECT") {
-    if (database != "")
-      this.sqlConfig.database = database;
-    let pool = new sql.ConnectionPool(this.sqlConfig);
-    await pool.connect();
-    let request = pool.request();
-    let result = await request.query(queryString)
-    this.pools.push(pool);
-    return result.recordset;
+  async query(queryString, database = "") {
+    try {
+      if (database != "")
+        this.sqlConfig.database = database;
+      let pool = new sql.ConnectionPool(this.sqlConfig);
+      await pool.connect();
+      let request = pool.request();
+      let result = await request.query(queryString)
+      this.pools.push(pool);
+      return result.recordset;
+    }
+    catch (err) {
+      return { error: 1, msg: err };
+    }
   }
 
   async closePools() {

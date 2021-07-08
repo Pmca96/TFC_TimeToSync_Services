@@ -16,7 +16,6 @@ const Connection_GetDataSqlServer = async (dataConnection, dataMongo) => {
 
         clientSql = new SqlServer(dataConnection.host, dataConnection.port, dataConnection.user, dataConnection.pass)
         await clientSql.init();
-        console.log("here");
 
         let resultDatabases = await clientSql.query("SELECT name as 'Database' FROM sys.databases WHERE name NOT IN ('master', 'tempdb','model', 'msdb');");
 
@@ -54,10 +53,10 @@ const Connection_GetDataSqlServer = async (dataConnection, dataMongo) => {
          ] }, true)
         await clientSql.closePools();
         await clientMongo.close();
-        process.exit("1");
+        process.exit(0);
     } catch (e) {
         console.log(e);
-        process.exit("0");
+        process.exit(1);
     }
 }
 

@@ -42,7 +42,7 @@ const getNewData = async (data, conditionID) => {
 
                 workerList.push(worker);
                 worker.on('exit', (code) => {
-                    if (code == 0)
+                    if (code == 1)
                         error=true;
                     exitedWorkers++;
                 })

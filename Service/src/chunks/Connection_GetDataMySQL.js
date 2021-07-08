@@ -55,10 +55,10 @@ const Connection_GetDataMySQL = async (dataConnection, dataMongo) => {
          ] }, true)
 
         await clientMongo.close();
-        process.exit("1");
+        process.exit(0);
     } catch (e) {
         console.log(e);
-        process.exit("0");
+        process.exit(1);
     }
 }
 

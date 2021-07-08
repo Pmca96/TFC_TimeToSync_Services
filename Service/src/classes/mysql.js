@@ -62,7 +62,7 @@ class MySQL {
     try {
       return new Promise(function (resolve, reject) {
         self.pool.query(queryString, function (err, result, fields) {
-          if (err) reject(err); // not connected!
+          if (err) resolve({ error: 1, msg: err });
           resolve(result)
         });
       })

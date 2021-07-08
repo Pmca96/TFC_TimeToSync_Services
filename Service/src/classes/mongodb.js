@@ -45,6 +45,15 @@ class Mongo {
             result = await collectionSetted.updateOne(query, {$set: setChanges} )
         return result
     }
+    async push(collection, setChanges, query = {}, isMany = false) {
+        let collectionSetted = this.database.collection(collection);
+        let result;
+        if (isMany)
+          result = await collectionSetted.updateMany(query, { $push: setChanges });
+        else result = await collectionSetted.updateOne(query, { $push: setChanges });
+        return result;
+      }
+    
 
     async delete( collection, where = {}, isMany = false) {
         let collectionSetted = this.database.collection(collection);

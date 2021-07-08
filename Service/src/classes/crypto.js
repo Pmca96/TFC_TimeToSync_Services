@@ -31,7 +31,7 @@ const readConfig = () => {
     }
     catch (error) {
         console.log(".Couldn't read file config");
-        process.exit();
+        process.exit(1);
     }
 }
 
@@ -44,7 +44,7 @@ const writeConfig = (text) => {
     }
     catch (error) {
         console.log(".Couldn't write in file config");
-        process.exit();
+        process.exit(1);
     }
 }
 
