@@ -3,7 +3,9 @@ const crypt = require("./src/classes/crypto")
 const Mongo = require("./src/classes/mongodb")
 const Connection_CheckNew = require("./src/chunks/Connection_CheckNew")
 const Connection_Refresh = require("./src/chunks/Connection_Refresh")
-const Connection_CheckCronJobs = require("./src/chunks/Connection_CheckCronJobs")
+const Connection_TaskCheck = require("./src/chunks/Connection_TaskCheck")
+const Connection_FixStatusPendings = require("./src/chunks/Connection_FixStatusPendings")
+
 const pingHealthy = require("./src/chunks/pingHealthy")
 const { machineIdSync } = require("node-machine-id");
 const os = require("os");
@@ -85,11 +87,17 @@ const startTimers = async () => {
     // await pingHealthy(objectToDistribut);
     // await Connection_Refresh(objectToDistribut);
     // await Connection_CheckNew(objectToDistribut);
-    await Connection_CheckTasks(objectToDistribut);
+
+    //await Connection_TaskCheck(objectToDistribut);
+    //await Connection_FixStatusPendings(objectToDistribut);
+    await Connection_Notifications(objectToDistribut);
     setInterval(async function () {
     //    await pingHealthy(objectToDistribut);
     //    await Connection_CheckNew(objectToDistribut);
-           await Connection_CheckTasks(objectToDistribut);
+    
+    //     await Connection_TaskCheck(objectToDistribut);
+    //     await Connection_FixStatusPendings(objectToDistribut);
+           await Connection_Notifications(objectToDistribut);
     }, 15000);
 
     // Redefines tables
