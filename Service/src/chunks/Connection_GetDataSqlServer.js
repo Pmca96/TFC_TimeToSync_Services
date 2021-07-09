@@ -18,14 +18,13 @@ const Connection_GetDataSqlServer = async (dataConnection, dataMongo) => {
         await clientSql.init();
 
         let resultDatabases = await clientSql.query("SELECT name as 'Database' FROM sys.databases WHERE name NOT IN ('master', 'tempdb','model', 'msdb');");
-
+        
         await Promise.all(resultDatabases.map(async (i, k) => {
             let objectToInsert = {};
             objectToInsert.database = i.Database;
             objectToInsert.idConnection = Buffer.from(dataConnection._id.id).toString("hex")
             objectToInsert.dateLastUpdate = new Date()
             objectToInsert.tables = [];
-            // console.log("SELECT table_name as tableName FROM information_schema.tables WHERE table_schema = '"+i.Database+"';");
             let resultTables = await clientSql.query("SELECT TABLE_NAME as tableName, TABLE_SCHEMA as tableSchema FROM " + i.Database + ".INFORMATION_SCHEMA.TABLES  WHERE TABLE_TYPE = 'BASE TABLE'");
 
             await Promise.all(resultTables.map(async (j) => {

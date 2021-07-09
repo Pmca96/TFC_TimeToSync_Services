@@ -26,11 +26,11 @@ class Mongo {
         return result
     }
     
-    async find ( collection, query = null, sort = null, limit = 0) {
+    async find ( collection, query = null, sort = null, limit = 0, projection= null) {
         let collectionSetted = this.database.collection(collection);
         let result
         
-        result = await collectionSetted.find(query).sort(sort).limit(limit);
+        result = await collectionSetted.find(query).sort(sort).limit(limit).project(projection);
         let data = result.toArray();
         return data;
     }

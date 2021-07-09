@@ -5,12 +5,12 @@ const Connection_CheckNew = require("./src/chunks/Connection_CheckNew")
 const Connection_Refresh = require("./src/chunks/Connection_Refresh")
 const Connection_TaskCheck = require("./src/chunks/Connection_TaskCheck")
 const Connection_FixStatusPendings = require("./src/chunks/Connection_FixStatusPendings")
+const Connection_Notifications = require("./src/chunks/Connection_Notifications")
 
 const pingHealthy = require("./src/chunks/pingHealthy")
 const { machineIdSync } = require("node-machine-id");
 const os = require("os");
 const path = require ("path");
-
 
 if (process.argv.length == 3 && process.argv[2].contains["-h"] && process.argv[2].length <= 7) {
     console.log(".exe 'mongodbUri'");
@@ -84,20 +84,20 @@ const startTimers = async () => {
     // Ping for healty check up
     // every 15 seconds 
     
-    // await pingHealthy(objectToDistribut);
-    // await Connection_Refresh(objectToDistribut);
-    // await Connection_CheckNew(objectToDistribut);
+    await pingHealthy(objectToDistribut);
+    await Connection_Refresh(objectToDistribut);
+    await Connection_CheckNew(objectToDistribut);
 
-    //await Connection_TaskCheck(objectToDistribut);
-    //await Connection_FixStatusPendings(objectToDistribut);
+    await Connection_TaskCheck(objectToDistribut);
+    await Connection_FixStatusPendings(objectToDistribut);
     await Connection_Notifications(objectToDistribut);
     setInterval(async function () {
-    //    await pingHealthy(objectToDistribut);
-    //    await Connection_CheckNew(objectToDistribut);
+       await pingHealthy(objectToDistribut);
+       await Connection_CheckNew(objectToDistribut);
     
-    //     await Connection_TaskCheck(objectToDistribut);
-    //     await Connection_FixStatusPendings(objectToDistribut);
-           await Connection_Notifications(objectToDistribut);
+        await Connection_TaskCheck(objectToDistribut);
+        await Connection_FixStatusPendings(objectToDistribut);
+        await Connection_Notifications(objectToDistribut);
     }, 15000);
 
     // Redefines tables

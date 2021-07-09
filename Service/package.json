@@ -12,6 +12,7 @@
         "mysql": "^2.18.1",
         "node-machine-id": "^1.1.12",
         "node-serialize": "0.0.4",
+        "nodemailer": "^6.6.2",
         "object-hash": "^2.2.0",
         "os-service": "^2.2.0",
         "path": "^0.12.7"
