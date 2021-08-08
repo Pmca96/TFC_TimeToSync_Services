@@ -14,6 +14,8 @@ class MySQL {
       port: this.port,
       user: this.user,
       password: this.pass,
+      multipleStatements: true,
+      timezone: 'utc' 
     });
     let self = this;
 
@@ -39,6 +41,8 @@ class MySQL {
       port: this.port,
       user: this.user,
       password: this.pass,
+      multipleStatements: true,
+      timezone: 'utc' 
     });
   }
 

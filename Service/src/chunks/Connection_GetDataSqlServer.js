@@ -34,10 +34,11 @@ const Connection_GetDataSqlServer = async (dataConnection, dataMongo) => {
                 await Promise.all(resultColumns.map((m) =>
                     columnsToObj.push(m)
                 ))
-                objectToInsert.tables.push({ name: j.tableName, columns: columnsToObj })
+                objectToInsert.tables.push({ name: j.tableSchema+"."+j.tableName, columns: columnsToObj })
             }));
 
             let dataFound = await clientMongo.find("Databases", {idConnection:  objectToInsert.idConnection  , database:  objectToInsert.database})
+           
             if (dataFound.length > 0) 
                 await clientMongo.update("Databases", objectToInsert, {idConnection:  objectToInsert.idConnection  , database:  objectToInsert.database})
             else

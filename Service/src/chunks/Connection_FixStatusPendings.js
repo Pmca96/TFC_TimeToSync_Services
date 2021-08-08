@@ -2,8 +2,8 @@ let objectDataGlobal
 
 const Connection_FixStatusPendings = async (objectData) => {
     objectDataGlobal = objectData;
-    let pastDates = new Date(new Date().getTime() - 30*60000);
-
+    // 1000 = 1 seg
+    let pastDates = new Date(new Date().getTime() - 60000);
     await objectDataGlobal.mongoClient.update("Connections", {status:-1, dateStatus: new Date()},
         { status:1,   dateStatus: { $lte: pastDates } })
 

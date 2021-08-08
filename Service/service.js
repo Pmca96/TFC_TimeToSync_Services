@@ -84,7 +84,7 @@ const startTimers = async () => {
     // Ping for healty check up
     // every 15 seconds 
     
-    await pingHealthy(objectToDistribut);
+    // await pingHealthy(objectToDistribut);
     await Connection_Refresh(objectToDistribut);
     await Connection_CheckNew(objectToDistribut);
 
@@ -92,8 +92,8 @@ const startTimers = async () => {
     await Connection_FixStatusPendings(objectToDistribut);
     await Connection_Notifications(objectToDistribut);
     setInterval(async function () {
-       await pingHealthy(objectToDistribut);
-       await Connection_CheckNew(objectToDistribut);
+        await pingHealthy(objectToDistribut);
+        await Connection_CheckNew(objectToDistribut);
     
         await Connection_TaskCheck(objectToDistribut);
         await Connection_FixStatusPendings(objectToDistribut);
