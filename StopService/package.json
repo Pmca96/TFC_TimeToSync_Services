@@ -4,10 +4,11 @@
     "description": "Run Node.JS programs as native Operating System Services.",
     "main": "./src/stop.js",
     "dependencies": {
+        "dotenv": "^10.0.0",
         "os-service": "^2.2.0",
         "path": "^0.12.7"
     },
-    "bin": { 
+    "bin": {
         "myapp": "./src/stop.js"
     },
     "scripts": {

@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const serialize = require('node-serialize');
 const fs = require("fs");
 const path = require("path");
 
