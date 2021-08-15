@@ -17,13 +17,15 @@ const Connection_TaskRun = async (task, conections, synchronizations, dataMongo)
         let syncMode = 0 
         let synchronization = {}
         let connection = []
-
         //INITIALIZATION 
         synchronizations.map(data=> {
             data.tasks.map(j => {
+                
                 if (j._id == task._id) {
                     synchronization = data
+                    
                     delete synchronization.tasks
+                    
                     if (data.computerFrom == data.computerTo && data.computerFrom == dataMongo.machineIdDB)
                     syncMode = 1
                     else  if ( data.computerFrom == dataMongo.machineIdDB)
@@ -63,7 +65,7 @@ const Connection_TaskRun = async (task, conections, synchronizations, dataMongo)
                 data = await MySQL_TaskData.GetTaskData(task, connection[0],defaultData)
             else if(connection[0].typeDB == 'SQL Server')
                 data = await SqlServer_TaskData.GetTaskData(task, connection[0], defaultData)
-            
+            console.log("here");
             if (typeof data[0].error != "undefined" && data[0].error == 1 ) {
                 
                 await clientMongo.push( "TasksHistory",
@@ -93,6 +95,11 @@ const Connection_TaskRun = async (task, conections, synchronizations, dataMongo)
                     );
                     await clientMongo.update("TasksHistory", { status: 2, dateStatus: new Date() },
                         { idTask: task._id, status: 1 }
+                        , true)
+
+                    
+                    await clientMongo.update("Synchronizations", { 'tasks.$.status': 3, 'tasks.$.dateStatus': new Date() },
+                        { 'tasks._id': task._id }
                         , true)
                 }
                 else {
@@ -151,12 +158,12 @@ const Connection_TaskRun = async (task, conections, synchronizations, dataMongo)
                 "tasks._id": task._id,
                 status: 1
             }, true)
-
+            
             await clientMongo.update("Synchronizations", { 'tasks.$.status': 2, 'tasks.$.dateStatus': new Date() },
                 { 'tasks._id': task._id }
                 , true)
         }
-
+        console.log("closing it");
         process.exit(0);
         
     } catch (e) {
@@ -247,5 +254,7 @@ async function getDataFromMongo(task, clientMongo) {
     else 
         return [];
 }
+
+
 
 Connection_TaskRun(workerData[0],workerData[1],workerData[2],workerData[3]);

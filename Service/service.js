@@ -12,11 +12,12 @@ const { machineIdSync } = require("node-machine-id");
 const os = require("os");
 const path = require ("path");
 
-if (process.argv.length == 3 && process.argv[2].contains["-h"] && process.argv[2].length <= 7) {
-    console.log(".exe 'mongodbUri'");
+
+
+if (process.argv.length > 3 ) {
+    console.log(".exe \"mongodbUri\"");
     process.exit();
 }
-
 service.add(
     "TimeToSyncService",
     {
@@ -98,6 +99,7 @@ const startTimers = async () => {
         await Connection_TaskCheck(objectToDistribut);
         await Connection_FixStatusPendings(objectToDistribut);
         await Connection_Notifications(objectToDistribut);
+        console.log("cycle");
     }, 15000);
 
     // Redefines tables

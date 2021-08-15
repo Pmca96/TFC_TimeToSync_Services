@@ -35,6 +35,6 @@
     "scripts": {
         "b_mac": "npx pkg . --out-path .\\package\\ --targets node12-macos-x64",
         "b_linux": "npx pkg . --out-path .\\package\\ --targets node12-linux-armv6 ",
-        "b_win": "npx pkg . --out-path .\\package\\ --targets node12-win32-x64 --debug"
+        "b_win": "npx pkg . --out-path .\\package\\ --targets node12-win32-x64 "
     }
 }

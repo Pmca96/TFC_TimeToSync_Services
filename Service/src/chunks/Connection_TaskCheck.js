@@ -2,7 +2,6 @@ const { Worker } = require('worker_threads');
 var parser = require('cron-parser');
 
 const workerList = []
-let exitedWorkers = 0;
 let objectDataGlobal
 
 const Connection_TaskCheck = async (objectData) => {
@@ -14,23 +13,22 @@ const Connection_TaskCheck = async (objectData) => {
 
     // Pending tasks (from and to connections)
 
-    let dataTasks = await objectDataGlobal.mongoClient.find("TasksHistory", {
-        $or: [
-            {
-                $and: [
-                    { status: 0 },
-                    { fromComputer: objectDataGlobal.dataToWorkers.machineIdDB }
-                ]
-            },
-            {
-                and: [
-                    { status: 2 },
-                    { toComputer: objectDataGlobal.dataToWorkers.machineIdDB }
-                ]
-            }
+    let dataTasks = await objectDataGlobal.mongoClient.find("TasksHistory", { $or: [
+        {
+            $and: [
+                { status: 0 },
+                { fromComputer: objectDataGlobal.dataToWorkers.machineIdDB }
+            ]
+        },
+        {
+            $and: [
+                { status: 2 },
+                { toComputer: objectDataGlobal.dataToWorkers.machineIdDB }
+            ]
+        }
 
-        ]
-    })
+    ] } )
+
     let dataTasksFinal = [];
     let dataSynchronism = [];
 
@@ -54,8 +52,8 @@ const Connection_TaskCheck = async (objectData) => {
         await objectDataGlobal.mongoClient.update("TasksHistory", { status: 1, dateStatus: new Date() }, { idTask: { $in: dataTasksId }, status: 0 }, true)
         await objectDataGlobal.mongoClient.update("TasksHistory", { status: 3, dateStatus: new Date() }, { idTask: { $in: dataTasksId }, status: 2 }, true)
         let dataTasksFinalNew = await prepareTasksRun(dataTasksFinal)
-        await Promise.all(dataTasksFinalNew.map(data => getNewData(data.tasks, dataConnection, dataSynchronism)));
-        await objectDataGlobal.mongoClient.update("Synchronizations", { status: 2, dateStatus: new Date() }, { _id: { $in: conditionID }, status: 1 }, true)
+        await Promise.all(dataTasksFinalNew.map(data => getNewData(data.tasks[0], dataConnection, dataSynchronism)));
+        //await objectDataGlobal.mongoClient.update("Synchronizations", { status: 2, dateStatus: new Date() }, { _id: { $in: conditionID }, status: 1 }, true)
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -70,7 +68,6 @@ const Connection_TaskCheck = async (objectData) => {
              inactive: false 
     }, { idSync: 1 },  0)
     
-
     if (dataSyncsTasks.length > 0 && dataConnection.length > 0) {
         let dataSyncsTasksNew = await checkCronJob(dataSyncsTasks);
         let dataSyncsTasksActives = dataSyncsTasksNew
@@ -121,13 +118,13 @@ const Connection_TaskCheck = async (objectData) => {
 
             await Promise.all(dataSyncsTasksNew.map(data => getNewData(data.tasks, dataConnection, dataSyncsTasks)));
 
-            await objectDataGlobal.mongoClient.update("Synchronizations", { status: 2, dateStatus: new Date() }, {
-                $and: [
-                    { computerFrom: objectDataGlobal.dataToWorkers.machineIdDB },
-                    { _id: { $in: conditionID } },
-                    { status: 1 },
-                ]
-            }, true)
+            // await objectDataGlobal.mongoClient.update("Synchronizations", { status: 2, dateStatus: new Date() }, {
+            //     $and: [
+            //         { computerFrom: objectDataGlobal.dataToWorkers.machineIdDB },
+            //         { _id: { $in: conditionID } },
+            //         { status: 1 },
+            //     ]
+            // }, true)
         }
     }
 }
@@ -135,61 +132,67 @@ const Connection_TaskCheck = async (objectData) => {
 const getNewData = async (data, connection, synchronization) => {
     try {
         let dataPrepared = await prepareDependencies(data.filter(el => { return el != null}))
-        let error = [];
+        console.log(dataPrepared)
+        let exitedWorkers = 0;
         if (dataPrepared.length > 0)
-            await Promise.all(dataPrepared.map(async dataDependencie => {
-                await Promise.all(dataDependencie.map(async task => {
-                    let worker
-                    worker = new Worker(__dirname + "/Connection_TaskRun.js", {
-                        workerData: [task, connection, synchronization, objectDataGlobal.dataToWorkers]
-                    });
-                    workerList.push(worker);
-                    worker.on('exit', (code) => {
-                        if (code == 1)
-                            error.push(task);
-                        exitedWorkers++;
-                        
-                    })
-                }))
-            }))
-
-        await new Promise((resolve) => interv = setInterval(() => {
-            if (exitedWorkers == workerList.length) {
-                clearInterval(interv);
-                resolve()
+            for await (let dataDependencie of dataPrepared) {
+                console.log("next here");
+                exitedWorkers = await initWorker(dataDependencie, connection, synchronization,exitedWorkers);
+                console.log("exited Workers, outside: "+exitedWorkers)
             }
-        }, 100));
+            
+            console.log("next here1");
+    } catch (err) {
+        console.error(err);
+    }
+}
 
-        //validar
-        if (error.length > 0) {
-         
-            let conditionIDTasksErrors = []
-            error.map(async i => conditionIDTasksErrors.push(i._id));
-            if (conditionIDTasksErrors.length > 0) {
+const initWorker = async (dataDependencie, connection, synchronization,exitedWorkers) => {
+    await Promise.all(dataDependencie.map(async task => {
+        let worker
+        worker = new Worker(__dirname + "/Connection_TaskRun.js", {
+            workerData: [task, connection, synchronization, objectDataGlobal.dataToWorkers]
+        });
+        workerList.push(worker);
+        worker.on('exit', async  (code) => {
+            console.log("Code:" + code);
+            if (code == 1) {
                 await objectDataGlobal.mongoClient.update("Synchronizations", { status: -2, dateStatus: new Date() }, {
-                    "tasks._id": { $in: conditionIDTasksErrors },
+                    "tasks._id": task._id,
                     $or: [{ status: 1 }, { status:2 },{ status: 3 }]
                 }, true)
 
                 await objectDataGlobal.mongoClient.update("Synchronizations", { 'tasks.$.status': -2, 'tasks.$.dateStatus': new Date() },
-                    { 'tasks._id': { $in: conditionIDTasksErrors } }
+                    { 'tasks._id': task._id }
                     , true)
 
                 await objectDataGlobal.mongoClient.push(
                     "TasksHistory",
                     { history: { status: 5, dateStatus: new Date() } },
-                    { idTask: { $in: conditionIDTasksErrors }, status: { $in: [1, 3] } }
+                    { idTask: task._id, status: { $in: [1, 3] } }
                 );
 
                 await objectDataGlobal.mongoClient.update("TasksHistory", { status: 5, dateStatus: new Date() },
-                    { idTask: { $in: conditionIDTasksErrors }, status: { $in: [1, 3] } }
+                    { idTask: task._id, status: { $in: [1, 3] } }
                     , true)
             }
-        }
+            
+            exitedWorkers++;
+            console.log("workers : "+ exitedWorkers)
+            console.log("len WorkL : "+ workerList.length)
+        })
+    }))
 
-    } catch (err) {
-        console.error(err);
-    }
+    await new Promise((resolve) => interv = setInterval(() => {
+        
+        if (exitedWorkers == workerList.length) {
+            console.log("Exit");
+        } else 
+        
+            console.log(exitedWorkers + " -- " + workerList.length + " == " + (exitedWorkers == workerList.length)  )
+    }, 100));
+    console.log("exited");
+    return exitedWorkers;
 }
 
 const checkCronJob = async (data) => {
@@ -232,6 +235,7 @@ const prepareDependencies = async (data) => {
         })
         currIterator++;
     }
+
     if (currIterator == 10)
         dataDependencies = [];
 

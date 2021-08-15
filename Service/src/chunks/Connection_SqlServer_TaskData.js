@@ -141,7 +141,7 @@ const constructQueryUpd = async (objectValues, columns, valueColumns, type ) => 
 
 const checkTypeOf = (value) => {
     if (typeof value == "string")
-        return "'"+value.replace("'","''")+"'";
+        return "'"+replaceAll(value,"'","''")+"'";
     else if (value instanceof Date) {
         return formatDate(value)
     }
@@ -170,5 +170,10 @@ function formatDate(date) {
         second = '0' + second;
     return "'"+ [year, month, day].join('-')+" "+[hour, minute, second].join(':')+"."+mili+"'";
 }
+
+function replaceAll(string, search, replace) {
+    return string.split(search).join(replace);
+}
+  
 exports.SendTaskData = Connection_SqlServer_SendTaskData;
 exports.GetTaskData = Connection_SqlServer_GetTaskData;
