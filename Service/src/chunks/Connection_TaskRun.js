@@ -65,7 +65,7 @@ const Connection_TaskRun = async (task, conections, synchronizations, dataMongo)
                 data = await MySQL_TaskData.GetTaskData(task, connection[0],defaultData)
             else if(connection[0].typeDB == 'SQL Server')
                 data = await SqlServer_TaskData.GetTaskData(task, connection[0], defaultData)
-            console.log("here");
+          
             if (typeof data[0].error != "undefined" && data[0].error == 1 ) {
                 
                 await clientMongo.push( "TasksHistory",
@@ -97,7 +97,6 @@ const Connection_TaskRun = async (task, conections, synchronizations, dataMongo)
                         { idTask: task._id, status: 1 }
                         , true)
 
-                    
                     await clientMongo.update("Synchronizations", { 'tasks.$.status': 3, 'tasks.$.dateStatus': new Date() },
                         { 'tasks._id': task._id }
                         , true)
@@ -163,7 +162,6 @@ const Connection_TaskRun = async (task, conections, synchronizations, dataMongo)
                 { 'tasks._id': task._id }
                 , true)
         }
-        console.log("closing it");
         process.exit(0);
         
     } catch (e) {
@@ -175,10 +173,8 @@ const Connection_TaskRun = async (task, conections, synchronizations, dataMongo)
 async function transformData(data, task) {
     
     let dataResult = [];
-
     let mappingTranformation = {};
-    let keyValue = 0; 
-   
+
     for (const [key, value] of Object.entries(data[0])) {
         mappingTranformation[key] = {};
         await Promise.all(task.columnFrom.map((i,k) => {
@@ -188,7 +184,6 @@ async function transformData(data, task) {
                 mappingTranformation[key].columnAss = task.columnTo[k]
             }
         } ))
-        keyValue ++;
     }
 
     await Promise.all(data.map( async (i,k) => {

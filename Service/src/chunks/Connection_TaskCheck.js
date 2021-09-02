@@ -1,12 +1,14 @@
 const { Worker } = require('worker_threads');
 var parser = require('cron-parser');
 
-const workerList = []
+let workerList = []
+let exitedWorkers = 0;
 let objectDataGlobal
 
 const Connection_TaskCheck = async (objectData) => {
     objectDataGlobal = objectData;
-
+    workerList = []
+    exitedWorkers = 0;
     let dataConnection = [];
     dataConnection = await objectDataGlobal.mongoClient.find("Connections",
         { computers: objectDataGlobal.dataToWorkers.machineIdDB })
@@ -28,6 +30,7 @@ const Connection_TaskCheck = async (objectData) => {
         }
 
     ] } )
+    
 
     let dataTasksFinal = [];
     let dataSynchronism = [];
@@ -37,9 +40,31 @@ const Connection_TaskCheck = async (objectData) => {
     if (dataTasks.length > 0 && dataConnection.length > 0) {
         dataTasks.map(i => dataTasksId.push(i.idTask))
         if (dataTasksId.length > 0) {
-            dataTasksFinal = await objectDataGlobal.mongoClient.find("Synchronizations",
-                { 'tasks._id': { $in: dataTasksId } }
-                , null, 0, { _id: 1, tasks: 1 })
+            dataTasksFinal = await objectDataGlobal.mongoClient.aggregate("Synchronizations",
+                [
+                    {
+                      '$unwind': '$tasks'
+                    }, {
+                      '$match': {
+                        'tasks._id': {
+                          '$in': dataTasksId
+                        }
+                      }
+                    }, {
+                      '$project': {
+                        'tasks': 1
+                      }
+                    }, {
+                      '$group': {
+                        '_id': '$_id', 
+                        'tasks': {
+                          '$push': '$tasks'
+                        }
+                      }
+                    }
+                  ]
+            );
+            
             dataSynchronism = await objectDataGlobal.mongoClient.find("Synchronizations",
                 { 'tasks._id': { $in: dataTasksId } })
         }
@@ -51,10 +76,10 @@ const Connection_TaskCheck = async (objectData) => {
         await objectDataGlobal.mongoClient.update("Synchronizations", { 'tasks.$.status': 1, 'tasks.$.dateStatus': new Date() }, { 'tasks._id': { $in: dataTasksId } }, true)
         await objectDataGlobal.mongoClient.update("TasksHistory", { status: 1, dateStatus: new Date() }, { idTask: { $in: dataTasksId }, status: 0 }, true)
         await objectDataGlobal.mongoClient.update("TasksHistory", { status: 3, dateStatus: new Date() }, { idTask: { $in: dataTasksId }, status: 2 }, true)
-        let dataTasksFinalNew = await prepareTasksRun(dataTasksFinal)
+        
+        let dataTasksFinalNew = await prepareTasksRun(dataTasksFinal, dataTasksId)
         await Promise.all(dataTasksFinalNew.map(data => getNewData(data.tasks[0], dataConnection, dataSynchronism)));
-        //await objectDataGlobal.mongoClient.update("Synchronizations", { status: 2, dateStatus: new Date() }, { _id: { $in: conditionID }, status: 1 }, true)
-    }
+   }
 
     //------------------------------------------------------------------------------------------------------------------
     // Cron job for tasks (from and to connections)
@@ -67,6 +92,7 @@ const Connection_TaskCheck = async (objectData) => {
             "tasks.inactive": false,
              inactive: false 
     }, { idSync: 1 },  0)
+
     
     if (dataSyncsTasks.length > 0 && dataConnection.length > 0) {
         let dataSyncsTasksNew = await checkCronJob(dataSyncsTasks);
@@ -132,16 +158,17 @@ const Connection_TaskCheck = async (objectData) => {
 const getNewData = async (data, connection, synchronization) => {
     try {
         let dataPrepared = await prepareDependencies(data.filter(el => { return el != null}))
-        console.log(dataPrepared)
-        let exitedWorkers = 0;
-        if (dataPrepared.length > 0)
-            for await (let dataDependencie of dataPrepared) {
-                console.log("next here");
+        if (dataPrepared.length > 0) 
+            for await (let dataDependencie of dataPrepared) 
                 exitedWorkers = await initWorker(dataDependencie, connection, synchronization,exitedWorkers);
-                console.log("exited Workers, outside: "+exitedWorkers)
-            }
             
-            console.log("next here1");
+            await new Promise((resolve) => interv1 = setInterval(() => {
+        
+                if (exitedWorkers == workerList.length) {
+                    clearInterval(interv1);
+                    resolve()
+                } 
+            }, 100));
     } catch (err) {
         console.error(err);
     }
@@ -155,7 +182,6 @@ const initWorker = async (dataDependencie, connection, synchronization,exitedWor
         });
         workerList.push(worker);
         worker.on('exit', async  (code) => {
-            console.log("Code:" + code);
             if (code == 1) {
                 await objectDataGlobal.mongoClient.update("Synchronizations", { status: -2, dateStatus: new Date() }, {
                     "tasks._id": task._id,
@@ -178,20 +204,16 @@ const initWorker = async (dataDependencie, connection, synchronization,exitedWor
             }
             
             exitedWorkers++;
-            console.log("workers : "+ exitedWorkers)
-            console.log("len WorkL : "+ workerList.length)
         })
     }))
 
     await new Promise((resolve) => interv = setInterval(() => {
         
         if (exitedWorkers == workerList.length) {
-            console.log("Exit");
-        } else 
-        
-            console.log(exitedWorkers + " -- " + workerList.length + " == " + (exitedWorkers == workerList.length)  )
+            clearInterval(interv);
+            resolve()
+        } 
     }, 100));
-    console.log("exited");
     return exitedWorkers;
 }
 
@@ -242,20 +264,21 @@ const prepareDependencies = async (data) => {
     return dataDependencies;
 }
 
-const prepareTasksRun = async(data) => {
+const prepareTasksRun = async(data, tasksId ) => {
     
     let syncTasks = []
     data.map(i => {
         let exitsId = false
         syncTasks.map( j => {
-            if (j._id == i._id) {
+            if (j._id == i._id ) {
                 exitsId = true
                 j.tasks.push(i.tasks)
             }
         })
-        if (! exitsId) {
+        if (!exitsId) {
             syncTasks.push({_id:i._id, tasks:[i.tasks]})
         }
+        
     })
     return syncTasks;
 

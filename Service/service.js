@@ -80,10 +80,6 @@ const initialize = async function () {
 
 
 const startTimers = async () => {
-    // Check new database connections to get structure
-    // Check task
-    // Ping for healty check up
-    // every 15 seconds 
     
     await pingHealthy(objectToDistribut);
     await Connection_Refresh(objectToDistribut);
@@ -92,21 +88,21 @@ const startTimers = async () => {
     await Connection_TaskCheck(objectToDistribut);
     await Connection_FixStatusPendings(objectToDistribut);
     await Connection_Notifications(objectToDistribut);
+
+    // every 15 seconds 
     setInterval(async function () {
         await pingHealthy(objectToDistribut);
         await Connection_CheckNew(objectToDistribut);
-    
         await Connection_TaskCheck(objectToDistribut);
         await Connection_FixStatusPendings(objectToDistribut);
         await Connection_Notifications(objectToDistribut);
-        console.log("cycle");
     }, 15000);
 
     // Redefines tables
     // every 30 minutes
     setInterval(async function () {
        await Connection_Refresh(objectToDistribut);
-    }, 1830000);
+    }, 1800000);
 }
 
 

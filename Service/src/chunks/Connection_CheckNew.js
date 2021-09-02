@@ -64,7 +64,6 @@ const getNewData = async (data, conditionID) => {
             }
         })
 
-        // aguarda o feicho das threads
         await new Promise((resolve) => interv = setInterval(() => {
             if (exitedWorkers == workerList.length) {
                 clearInterval(interv);

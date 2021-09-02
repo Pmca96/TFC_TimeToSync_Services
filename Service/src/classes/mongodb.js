@@ -35,6 +35,16 @@ class Mongo {
         return data;
     }
 
+    async aggregate ( collection, query = null) {
+        let collectionSetted = this.database.collection(collection);
+        let result
+        
+        result = await collectionSetted.aggregate(query);
+        let data = result.toArray();
+        
+        return data;
+    }
+
     async update( collection, setChanges, query = {}, isMany = false ) {
         let collectionSetted = this.database.collection(collection);
         let result
